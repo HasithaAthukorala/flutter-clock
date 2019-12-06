@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math';
 
+import 'package:analog_clock/tween.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -12,6 +15,9 @@ import 'package:vector_math/vector_math_64.dart' show radians;
 
 import 'container_hand.dart';
 import 'drawn_hand.dart';
+import 'fancy_background.dart';
+import 'hour_hand.dart';
+import 'wave.dart';
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -43,6 +49,10 @@ class _AnalogClockState extends State<AnalogClock> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
     widget.model.addListener(_updateModel);
     // Set the initial values.
     _updateTime();
@@ -135,6 +145,21 @@ class _AnalogClockState extends State<AnalogClock> {
         color: customTheme.backgroundColor,
         child: Stack(
           children: [
+            Positioned.fill(child: buildAnimation()),
+            onBottom(AnimatedWave(
+              height: 180,
+              speed: 1.0,
+            )),
+            onBottom(AnimatedWave(
+              height: 120,
+              speed: 0.9,
+              offset: pi,
+            )),
+            onBottom(AnimatedWave(
+              height: 220,
+              speed: 1.2,
+              offset: pi / 2,
+            )),
             // Example of a hand drawn with [CustomPainter].
             DrawnHand(
               color: customTheme.accentColor,
@@ -156,13 +181,7 @@ class _AnalogClockState extends State<AnalogClock> {
                   (_now.minute / 60) * radiansPerHour,
               child: Transform.translate(
                 offset: Offset(0.0, -60.0),
-                child: Container(
-                  width: 32,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: customTheme.primaryColor,
-                  ),
-                ),
+                child: Icon(Icons.arrow_forward),
               ),
             ),
             Positioned(
@@ -176,6 +195,39 @@ class _AnalogClockState extends State<AnalogClock> {
           ],
         ),
       ),
+    );
+  }
+
+  onBottom(Widget child) => Positioned.fill(
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: child,
+      )
+  );
+
+
+      final tween = MultiTrackTween([
+    Track("color1").add(Duration(seconds: 3),
+        ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
+    Track("color2").add(Duration(seconds: 3),
+        ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
+  ]);
+
+
+  Widget buildAnimation() {
+    return ControlledAnimation(
+      playback: Playback.MIRROR,
+      tween: tween,
+      duration: tween.duration,
+      builder: (context, animation) {
+        return Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [animation["color1"], animation["color2"]])),
+        );
+      },
     );
   }
 }
