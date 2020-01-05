@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:analog_clock/slider_painter.dart';
 import 'package:analog_clock/tween.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_clock_helper/model.dart';
@@ -14,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 
 import 'container_hand.dart';
+import 'draw_circle.dart';
 import 'drawn_hand.dart';
 import 'fancy_background.dart';
 import 'hour_hand.dart';
@@ -90,7 +92,7 @@ class _AnalogClockState extends State<AnalogClock> {
       // Update once per second. Make sure to do it at the beginning of each
       // new second, so that the clock is accurate.
       _timer = Timer(
-        Duration(seconds: 1) - Duration(milliseconds: _now.millisecond),
+        Duration(microseconds: 100) - Duration(milliseconds: _now.millisecond),
         _updateTime,
       );
     });
@@ -136,16 +138,20 @@ class _AnalogClockState extends State<AnalogClock> {
       ),
     );
 
+    final Size size = MediaQuery.of(context).size;
+
+//    print(_now.second.toString() + "     " + _now.millisecond.toString());
+
     return Semantics.fromProperties(
       properties: SemanticsProperties(
         label: 'Analog clock with time $time',
         value: time,
       ),
       child: Container(
-        color: customTheme.backgroundColor,
+        color: Colors.blue,
         child: Stack(
           children: [
-            Positioned.fill(child: buildAnimation()),
+//            Positioned.fill(child: buildAnimation()),
             onBottom(AnimatedWave(
               height: 180,
               speed: 1.0,
@@ -160,30 +166,49 @@ class _AnalogClockState extends State<AnalogClock> {
               speed: 1.2,
               offset: pi / 2,
             )),
-            // Example of a hand drawn with [CustomPainter].
-            DrawnHand(
-              color: customTheme.accentColor,
-              thickness: 4,
-              size: 1,
-              angleRadians: _now.second * radiansPerTick,
-            ),
-            DrawnHand(
-              color: customTheme.highlightColor,
-              thickness: 16,
-              size: 0.9,
-              angleRadians: _now.minute * radiansPerTick,
-            ),
-            // Example of a hand drawn with [Container].
-            ContainerHand(
-              color: Colors.transparent,
-              size: 0.5,
-              angleRadians: _now.hour * radiansPerHour +
-                  (_now.minute / 60) * radiansPerHour,
-              child: Transform.translate(
-                offset: Offset(0.0, -60.0),
-                child: Icon(Icons.arrow_forward),
+
+            new Center(
+              child: Container(
+                child: CustomPaint(painter: DrawCircle(size)),
               ),
             ),
+
+            new Center(
+              child: Container(
+                child: CustomPaint(painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Colors.white30),),
+              ),
+            ),
+
+            // Example of a hand drawn with [CustomPainter].
+//            DrawnHand(
+//              color: customTheme.accentColor,
+//              thickness: 4,
+//              size: 0.5,
+//              angleRadians: _now.second * radiansPerTick,
+//            ),
+            DrawnHand(
+              color: Colors.white.withOpacity(0.5),
+              thickness: 8,
+              size: 0.45,
+              angleRadians: _now.minute * radiansPerTick,
+            ),
+            DrawnHand(
+              color: Colors.white.withOpacity(0.5),
+              thickness: 16,
+              size: 0.3,
+              angleRadians: _now.hour * radiansPerTick,
+            ),
+            // Example of a hand drawn with [Container].
+//            ContainerHand(
+//              color: Colors.transparent,
+//              size: 0.25,
+//              angleRadians: _now.hour * radiansPerHour +
+//                  (_now.minute / 60) * radiansPerHour,
+//              child: Transform.translate(
+//                offset: Offset(0.0, -60.0),
+//                child: Icon(Icons.arrow_forward),
+//              ),
+//            ),
             Positioned(
               left: 0,
               bottom: 0,

@@ -43,6 +43,7 @@ class CurvePainter extends CustomPainter {
     final white = Paint()..color = Colors.white.withAlpha(60);
     final path = Path();
 
+
     final y1 = sin(value);
     final y2 = sin(value + pi / 2);
     final y3 = sin(value + pi);

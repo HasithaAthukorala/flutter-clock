@@ -81,9 +81,11 @@ class _HandPainter extends CustomPainter {
     final linePaint = Paint()
       ..color = color
       ..strokeWidth = lineWidth
-      ..strokeCap = StrokeCap.square;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(center, position, linePaint);
+//    canvas.drawRRect(new RRect.fromRectAndCorners(new Rect.fromCenter(center: center, width: position, height: position)), linePaint);
   }
 
   @override
