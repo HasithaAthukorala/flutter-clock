@@ -171,7 +171,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                     ),
                   ),
                   Text(
-                    weekdays[DateTime.now().weekday],
+                    weekdays[DateTime.now().weekday - 1],
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,

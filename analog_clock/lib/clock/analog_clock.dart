@@ -74,6 +74,7 @@ class _AnalogClockState extends State<AnalogClock> {
         color: Color(0xFF0F3F63),
         child: Stack(
           children: [
+            _buildAnimation(),
             onBottom(AnimatedWave(
               height: 30,
               speed: 1.0,
