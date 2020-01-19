@@ -106,7 +106,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                 child: BoxedIcon(
                   _getWeatherIcon(),
                   size: 50,
-                  color: Color(0xD1FFEB3B),
+                  color: Color(0xE1FFEB3B),
                 ),
               ),
             ],

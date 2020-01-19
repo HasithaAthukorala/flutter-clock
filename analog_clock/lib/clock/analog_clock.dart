@@ -8,7 +8,9 @@ import 'dart:math';
 import 'package:analog_clock/background/tween.dart';
 import 'package:analog_clock/clock/clock_dial_painter.dart';
 import 'package:analog_clock/clock/weather_widget.dart';
+import 'package:analog_clock/utils/constants.dart';
 import 'package:analog_clock/utils/slider_painter.dart';
+import 'package:analog_clock/weather_effects/thunderstorm_effect.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -45,6 +47,7 @@ class _AnalogClockState extends State<AnalogClock> {
   var _condition = '';
   Timer _timer;
 
+
   final tween = MultiTrackTween([
     Track("color1").add(Duration(seconds: 3),
         ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
@@ -71,10 +74,31 @@ class _AnalogClockState extends State<AnalogClock> {
         value: time,
       ),
       child: Container(
-        color: Color(0xFF0F3F63),
+        color: NIGHT_DARK_BLUE,
         child: Stack(
           children: [
-            _buildAnimation(),
+//            _buildAnimation(), //TODO: Remove
+            ThunderstormEffect(timeDuration: Duration(seconds: 5),),
+            Container(
+              // Add box decoration
+              decoration: BoxDecoration(
+                // Box decoration takes a gradient
+                gradient: LinearGradient(
+                  // Where the linear gradient begins and ends
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  // Add one stop for each color. Stops should increase from 0 to 1
+                  stops: [0.1, 0.5, 0.7, 0.9],
+                  colors: [
+                    // Colors are easy thanks to Flutter's Colors class.
+                    Colors.black54,
+                    Colors.black45,
+                    Colors.black38,
+                    Colors.black12,
+                  ],
+                ),
+              ),
+            ),
             onBottom(AnimatedWave(
               height: 30,
               speed: 1.0,
@@ -188,23 +212,6 @@ class _AnalogClockState extends State<AnalogClock> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildAnimation() {
-    return ControlledAnimation(
-      playback: Playback.MIRROR,
-      tween: tween,
-      duration: tween.duration,
-      builder: (context, animation) {
-        return Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [animation["color1"], animation["color2"]])),
-        );
-      },
     );
   }
 
