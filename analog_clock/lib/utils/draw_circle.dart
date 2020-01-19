@@ -6,7 +6,7 @@ class DrawCircle extends CustomPainter {
 
   DrawCircle(this.screenSize) {
     _paint = Paint()
-      ..color = Colors.white30
+      ..color = Color(0xc11C9CF6)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
   }

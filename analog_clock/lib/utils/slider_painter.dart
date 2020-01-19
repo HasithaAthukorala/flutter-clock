@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:analog_clock/utils.dart';
+import 'package:analog_clock/utils/utils.dart';
 
 class SliderPainter extends CustomPainter {
   double startAngle;
@@ -13,21 +13,25 @@ class SliderPainter extends CustomPainter {
   Offset endHandler;
   Offset center;
   double radius;
+  double strokeWidth;
 
   SliderPainter(
       {@required this.startAngle,
         @required this.endAngle,
         @required this.sweepAngle,
-        @required this.selectionColor});
+        @required this.selectionColor,
+        @required this.radius,
+        @required this.strokeWidth
+      });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (startAngle == 0.0 && endAngle == 0.0) return;
 
-    Paint progress = _getPaint(color: selectionColor);
+    Paint progress = _getPaint(color: selectionColor, width: strokeWidth);
 
     center = Offset(size.width / 2, size.height / 2);
-    radius = 120; //ToDo: Configure
+//    radius = 100; //ToDo: Configure
 
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         -pi / 2 + startAngle, sweepAngle, false, progress);
@@ -44,7 +48,7 @@ class SliderPainter extends CustomPainter {
 //    canvas.drawCircle(endHandler, 8.0, handler);
 //    canvas.drawCircle(endHandler, 12.0, handlerOutter);
 
-    Paint split = _getPaint(color: Colors.white.withOpacity(0.4));
+    Paint split = _getPaint(color: Colors.white.withOpacity(0.4), width: strokeWidth);
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         startAngle - pi / 2, endAngle, false, split);
   }
