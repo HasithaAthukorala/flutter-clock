@@ -5,21 +5,19 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:analog_clock/slider_painter.dart';
-import 'package:analog_clock/tween.dart';
+import 'package:analog_clock/clock/clock_dial_painter.dart';
+import 'package:analog_clock/clock/weather_widget.dart';
+import 'package:analog_clock/utils/slider_painter.dart';
+import 'package:analog_clock/background/tween.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
-
-import 'container_hand.dart';
-import 'draw_circle.dart';
 import 'drawn_hand.dart';
-import 'fancy_background.dart';
-import 'hour_hand.dart';
-import 'wave.dart';
+import '../background/fancy_background.dart';
+import '../background/wave.dart';
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -107,6 +105,9 @@ class _AnalogClockState extends State<AnalogClock> {
     //  - Create your own [ThemeData], demonstrated in [AnalogClock].
     //  - Create a map of [Color]s to custom keys, demonstrated in
     //    [DigitalClock].
+
+    Size size = MediaQuery.of(context).size;
+
     final customTheme = Theme.of(context).brightness == Brightness.light
         ? Theme.of(context).copyWith(
             // Hour hand.
@@ -125,98 +126,109 @@ class _AnalogClockState extends State<AnalogClock> {
           );
 
     final time = DateFormat.Hms().format(DateTime.now());
-    final weatherInfo = DefaultTextStyle(
-      style: TextStyle(color: customTheme.primaryColor),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(_temperature),
-          Text(_temperatureRange),
-          Text(_condition),
-          Text(_location),
-        ],
-      ),
-    );
-
-    final Size size = MediaQuery.of(context).size;
-
-//    print(_now.second.toString() + "     " + _now.millisecond.toString());
-
     return Semantics.fromProperties(
       properties: SemanticsProperties(
         label: 'Analog clock with time $time',
         value: time,
       ),
       child: Container(
-        color: Colors.blue,
+        color: Color(0xFF0F3F63),
         child: Stack(
           children: [
-//            Positioned.fill(child: buildAnimation()),
+//            Positioned.fill(child: Image.asset("assets/iphone_background.jpg", fit: BoxFit.cover,)),
+//            Positioned.fill(child: Container(color: Colors.black38,)),
             onBottom(AnimatedWave(
-              height: 180,
+              height: 30,
               speed: 1.0,
             )),
             onBottom(AnimatedWave(
-              height: 120,
+              height: 40,
               speed: 0.9,
               offset: pi,
             )),
             onBottom(AnimatedWave(
-              height: 220,
+              height: 80,
               speed: 1.2,
               offset: pi / 2,
             )),
 
-            new Center(
-              child: Container(
-                child: CustomPaint(painter: DrawCircle(size)),
-              ),
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  flex: 1,
+                  child: Container(),
+                ),
+                Expanded(
+                  flex: 8,
+                  child: WeatherWidget(temperature: _temperature, condition: _condition),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        VerticalDivider(
+                          color: Colors.white.withOpacity(0.4),
+                          thickness: 0.5,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 8,
+                  child: Stack(
+                    children: <Widget>[
+                      new Center(
+                        child: Container(
+                          child: CustomPaint(
+                            painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Color(0xa11C9CF6), radius: 105, strokeWidth: 2),
+                          ),
+                        ),
+                      ),
 
-            new Center(
-              child: Container(
-                child: CustomPaint(painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Colors.white30),),
-              ),
-            ),
+                      new Center(
+                        child: Container(
+                          child: CustomPaint(painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Color(0xa11C9CF6), radius: 120, strokeWidth: 12),),
+                        ),
+                      ),
 
-            // Example of a hand drawn with [CustomPainter].
-//            DrawnHand(
-//              color: customTheme.accentColor,
-//              thickness: 4,
-//              size: 0.5,
-//              angleRadians: _now.second * radiansPerTick,
-//            ),
-            DrawnHand(
-              color: Colors.white.withOpacity(0.5),
-              thickness: 8,
-              size: 0.45,
-              angleRadians: _now.minute * radiansPerTick,
-            ),
-            DrawnHand(
-              color: Colors.white.withOpacity(0.5),
-              thickness: 16,
-              size: 0.3,
-              angleRadians: _now.hour * radiansPerTick,
-            ),
-            // Example of a hand drawn with [Container].
-//            ContainerHand(
-//              color: Colors.transparent,
-//              size: 0.25,
-//              angleRadians: _now.hour * radiansPerHour +
-//                  (_now.minute / 60) * radiansPerHour,
-//              child: Transform.translate(
-//                offset: Offset(0.0, -60.0),
-//                child: Icon(Icons.arrow_forward),
-//              ),
-//            ),
-            Positioned(
-              left: 0,
-              bottom: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: weatherInfo,
-              ),
-            ),
+                      DrawnHand(
+                        color: Color(0xc1ff6781),
+                        thickness: 8,
+                        size: 0.65,
+                        angleRadians: _now.minute * radiansPerTick,
+                      ),
+                      DrawnHand(
+                        color: Color(0xc1ff6781),
+                        thickness: 16,
+                        size: 0.4,
+                        angleRadians: _now.hour * radiansPerTick,
+                      ),
+                      DrawnHand(
+                        color: Colors.white60,
+                        thickness: 4,
+                        size: 0.7,
+                        angleRadians: _now.second * radiansPerTick,
+                      ),
+
+                      new Center(
+                        child: Container(
+                          child: CustomPaint(painter: ClockDialPainter(size,_now.second),),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Container(),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -231,7 +243,7 @@ class _AnalogClockState extends State<AnalogClock> {
   );
 
 
-      final tween = MultiTrackTween([
+  final tween = MultiTrackTween([
     Track("color1").add(Duration(seconds: 3),
         ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
     Track("color2").add(Duration(seconds: 3),
@@ -255,4 +267,6 @@ class _AnalogClockState extends State<AnalogClock> {
       },
     );
   }
+
+
 }
