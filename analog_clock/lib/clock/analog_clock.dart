@@ -77,8 +77,6 @@ class _AnalogClockState extends State<AnalogClock> {
         color: NIGHT_DARK_BLUE,
         child: Stack(
           children: [
-//            _buildAnimation(), //TODO: Remove
-            ThunderstormEffect(timeDuration: Duration(seconds: 5),),
             Container(
               // Add box decoration
               decoration: BoxDecoration(
