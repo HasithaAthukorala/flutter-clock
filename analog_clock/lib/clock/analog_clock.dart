@@ -5,12 +5,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:analog_clock/background/tween.dart';
 import 'package:analog_clock/clock/clock_dial_painter.dart';
 import 'package:analog_clock/clock/weather_widget.dart';
 import 'package:analog_clock/utils/constants.dart';
 import 'package:analog_clock/utils/slider_painter.dart';
-import 'package:analog_clock/weather_effects/thunderstorm_effect.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +16,6 @@ import 'package:flutter_clock_helper/model.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 
-import '../background/fancy_background.dart';
 import '../background/wave.dart';
 import 'drawn_hand.dart';
 
@@ -47,14 +44,6 @@ class _AnalogClockState extends State<AnalogClock> {
   var _condition = '';
   Timer _timer;
 
-
-  final tween = MultiTrackTween([
-    Track("color1").add(Duration(seconds: 3),
-        ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
-    Track("color2").add(Duration(seconds: 3),
-        ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
-  ]);
-
   @override
   Widget build(BuildContext context) {
     // There are many ways to apply themes to your clock. Some are:
@@ -65,6 +54,28 @@ class _AnalogClockState extends State<AnalogClock> {
     //  - Create a map of [Color]s to custom keys, demonstrated in
     //    [DigitalClock].
 
+    final _customTheme = Theme.of(context).brightness == Brightness.light
+        ? Theme.of(context).copyWith(
+        primaryColor: DARK_PRIMARY_COLOR,
+        highlightColor: DARK_HIGHLIGHT_COLOR,
+        accentColor: DARK_ACCENT_COLOR,
+        backgroundColor: DAY_LIGHT_BLUE,
+        buttonColor: DARK_ICON_COLOR,
+        textSelectionColor: DARK_TEXT_COLOR,
+        dividerColor: DARK_DIVIDER_COLOR,
+        cursorColor: DARK_CURSOR_COLOR
+    )
+        : Theme.of(context).copyWith(
+      primaryColor: DARK_PRIMARY_COLOR,
+      highlightColor: DARK_HIGHLIGHT_COLOR,
+      accentColor: DARK_ACCENT_COLOR,
+      backgroundColor: DARK_BACKGROUND_COLOR,
+      buttonColor: DARK_ICON_COLOR,
+      textSelectionColor: DARK_TEXT_COLOR,
+      dividerColor: DARK_DIVIDER_COLOR,
+      cursorColor: DARK_CURSOR_COLOR
+    );
+
     Size size = MediaQuery.of(context).size;
 
     final time = DateFormat.Hms().format(DateTime.now());
@@ -74,7 +85,7 @@ class _AnalogClockState extends State<AnalogClock> {
         value: time,
       ),
       child: Container(
-        color: NIGHT_DARK_BLUE,
+        color: _customTheme.backgroundColor,
         child: Stack(
           children: [
             Container(
@@ -122,7 +133,9 @@ class _AnalogClockState extends State<AnalogClock> {
                 Expanded(
                   flex: 8,
                   child: WeatherWidget(
-                      temperature: _temperature, condition: _condition),
+                    temperature: _temperature,
+                    condition: _condition,
+                    customTheme: _customTheme,),
                 ),
                 Expanded(
                   flex: 2,
@@ -132,7 +145,7 @@ class _AnalogClockState extends State<AnalogClock> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         VerticalDivider(
-                          color: Colors.white.withOpacity(0.4),
+                          color: _customTheme.dividerColor,
                           thickness: 0.5,
                         )
                       ],
@@ -147,14 +160,16 @@ class _AnalogClockState extends State<AnalogClock> {
                         child: Container(
                           child: CustomPaint(
                             painter: SliderPainter(
-                                startAngle: 0,
-                                endAngle:
-                                    ((_now.millisecond * 0.001) + _now.second) *
-                                        radiansPerTick,
-                                sweepAngle: 300,
-                                selectionColor: Color(0xa11C9CF6),
-                                radius: 105,
-                                strokeWidth: 2),
+                              startAngle: 0,
+                              endAngle:
+                                  ((_now.millisecond * 0.001) + _now.second) *
+                                      radiansPerTick,
+                              sweepAngle: 300,
+                              selectionColor: _customTheme.primaryColor,
+                              radius: 105,
+                              strokeWidth: 2,
+                              highlightColor: _customTheme.highlightColor
+                            ),
                           ),
                         ),
                       ),
@@ -162,31 +177,33 @@ class _AnalogClockState extends State<AnalogClock> {
                         child: Container(
                           child: CustomPaint(
                             painter: SliderPainter(
-                                startAngle: 0,
-                                endAngle:
-                                    ((_now.millisecond * 0.001) + _now.second) *
-                                        radiansPerTick,
-                                sweepAngle: 300,
-                                selectionColor: Color(0xa11C9CF6),
-                                radius: 120,
-                                strokeWidth: 12),
+                              startAngle: 0,
+                              endAngle:
+                                  ((_now.millisecond * 0.001) + _now.second) *
+                                      radiansPerTick,
+                              sweepAngle: 300,
+                              selectionColor: _customTheme.primaryColor,
+                              radius: 120,
+                              strokeWidth: 12,
+                              highlightColor: _customTheme.highlightColor
+                            ),
                           ),
                         ),
                       ),
                       DrawnHand(
-                        color: Color(0xc1ff6781),
+                        color: _customTheme.accentColor,
                         thickness: 8,
                         size: 0.65,
                         angleRadians: _now.minute * radiansPerTick,
                       ),
                       DrawnHand(
-                        color: Color(0xc1ff6781),
+                        color: _customTheme.accentColor,
                         thickness: 16,
                         size: 0.4,
                         angleRadians: _now.hour * radiansPerTick,
                       ),
                       DrawnHand(
-                        color: Colors.white60,
+                        color: _customTheme.cursorColor,
                         thickness: 4,
                         size: 0.7,
                         angleRadians: _now.second * radiansPerTick,
@@ -194,7 +211,7 @@ class _AnalogClockState extends State<AnalogClock> {
                       new Center(
                         child: Container(
                           child: CustomPaint(
-                            painter: ClockDialPainter(size, _now.second),
+                            painter: ClockDialPainter(size, _now.second, _customTheme),
                           ),
                         ),
                       ),

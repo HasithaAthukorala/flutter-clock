@@ -7,6 +7,7 @@ class SliderPainter extends CustomPainter {
   double endAngle;
   double sweepAngle;
   Color selectionColor;
+  Color highlightColor;
 
   Offset initHandler;
   Offset endHandler;
@@ -20,7 +21,8 @@ class SliderPainter extends CustomPainter {
       @required this.sweepAngle,
       @required this.selectionColor,
       @required this.radius,
-      @required this.strokeWidth});
+      @required this.strokeWidth,
+      @required this.highlightColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -33,7 +35,7 @@ class SliderPainter extends CustomPainter {
         -pi / 2 + startAngle, sweepAngle, false, progress);
 
     Paint split =
-        _getPaint(color: Colors.white.withOpacity(0.4), width: strokeWidth);
+        _getPaint(color: highlightColor, width: strokeWidth);
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         startAngle - pi / 2, endAngle, false, split);
   }

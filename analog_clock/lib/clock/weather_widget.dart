@@ -7,8 +7,9 @@ import 'package:weather_icons/weather_icons.dart';
 class WeatherWidget extends StatefulWidget {
   final String temperature;
   final String condition;
+  final ThemeData customTheme;
 
-  const WeatherWidget({Key key, this.temperature, this.condition})
+  const WeatherWidget({Key key, this.temperature, this.condition, this.customTheme})
       : super(key: key);
 
   @override
@@ -106,7 +107,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                 child: BoxedIcon(
                   _getWeatherIcon(),
                   size: 50,
-                  color: Color(0xE1FFEB3B),
+                  color: widget.customTheme.buttonColor,
                 ),
               ),
             ],
@@ -121,7 +122,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: widget.customTheme.textSelectionColor,
                     ),
                   ),
                   Text(
@@ -129,7 +130,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: widget.customTheme.textSelectionColor,
                     ),
                   ),
                 ],
@@ -142,7 +143,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                       width: 1,
                       height: 15,
                       child: Container(
-                        color: Colors.white.withOpacity(0.2),
+                        color: widget.customTheme.dividerColor,
                       ),
                     ),
                   ),
@@ -152,7 +153,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                       width: 1,
                       height: 15,
                       child: Container(
-                        color: Colors.white.withOpacity(0.2),
+                        color: widget.customTheme.dividerColor,
                       ),
                     ),
                   ),
@@ -167,7 +168,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: widget.customTheme.textSelectionColor,
                     ),
                   ),
                   Text(
@@ -175,7 +176,7 @@ class WeatherWidgetState extends State<WeatherWidget>
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: widget.customTheme.textSelectionColor,
                     ),
                   )
                 ],
