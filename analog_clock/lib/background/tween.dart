@@ -34,45 +34,11 @@ class MultiTrackTween extends Animatable<Map<String, dynamic>> {
 
   MultiTrackTween(List<Track> tracks)
       : assert(tracks != null && tracks.length > 0,
-  "Add a List<Track> to configure the tween."),
+            "Add a List<Track> to configure the tween."),
         assert(tracks.where((track) => track.items.length == 0).length == 0,
-        "Each Track needs at least one added Tween by using the add()-method.") {
+            "Each Track needs at least one added Tween by using the add()-method.") {
     _computeMaxDuration(tracks);
     _computeTrackTweens(tracks);
-  }
-
-  void _computeMaxDuration(List<Track> tracks) {
-    tracks.forEach((track) {
-      final trackDuration = track.items
-          .map((item) => item.duration.inMilliseconds)
-          .reduce((sum, item) => sum + item);
-      _maxDuration = max(_maxDuration, trackDuration);
-    });
-  }
-
-  void _computeTrackTweens(List<Track> tracks) {
-    tracks.forEach((track) {
-      final trackDuration = track.items
-          .map((item) => item.duration.inMilliseconds)
-          .reduce((sum, item) => sum + item);
-
-      final sequenceItems = track.items
-          .map((item) => TweenSequenceItem(
-          tween: item.tween,
-          weight: item.duration.inMilliseconds / _maxDuration))
-          .toList();
-
-      if (trackDuration < _maxDuration) {
-        sequenceItems.add(TweenSequenceItem(
-            tween: ConstantTween(null),
-            weight: (_maxDuration - trackDuration) / _maxDuration));
-      }
-
-      final sequence = TweenSequence(sequenceItems);
-
-      _tracksToTween[track.name] =
-          _TweenData(tween: sequence, maxTime: trackDuration / _maxDuration);
-    });
   }
 
   /// Returns the highest duration specified by [Track]s.
@@ -105,6 +71,40 @@ class MultiTrackTween extends Animatable<Map<String, dynamic>> {
       result[name] = tweenData.tween.transform(tTween);
     });
     return result;
+  }
+
+  void _computeMaxDuration(List<Track> tracks) {
+    tracks.forEach((track) {
+      final trackDuration = track.items
+          .map((item) => item.duration.inMilliseconds)
+          .reduce((sum, item) => sum + item);
+      _maxDuration = max(_maxDuration, trackDuration);
+    });
+  }
+
+  void _computeTrackTweens(List<Track> tracks) {
+    tracks.forEach((track) {
+      final trackDuration = track.items
+          .map((item) => item.duration.inMilliseconds)
+          .reduce((sum, item) => sum + item);
+
+      final sequenceItems = track.items
+          .map((item) => TweenSequenceItem(
+              tween: item.tween,
+              weight: item.duration.inMilliseconds / _maxDuration))
+          .toList();
+
+      if (trackDuration < _maxDuration) {
+        sequenceItems.add(TweenSequenceItem(
+            tween: ConstantTween(null),
+            weight: (_maxDuration - trackDuration) / _maxDuration));
+      }
+
+      final sequence = TweenSequence(sequenceItems);
+
+      _tracksToTween[track.name] =
+          _TweenData(tween: sequence, maxTime: trackDuration / _maxDuration);
+    });
   }
 }
 

@@ -13,7 +13,8 @@ class DrawCircle extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(Offset(0,0), screenSize.shortestSide * 0.5 * 0.6, _paint);
+    canvas.drawCircle(
+        Offset(0, 0), screenSize.shortestSide * 0.5 * 0.6, _paint);
   }
 
   @override

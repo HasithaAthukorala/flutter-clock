@@ -1,31 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-/// Playback tell the controller of the animation what to do.
-enum Playback {
-  /// Animation stands still.
-  PAUSE,
-
-  /// Animation plays forwards and stops at the end.
-  PLAY_FORWARD,
-
-  /// Animation plays backwards and stops at the beginning.
-  PLAY_REVERSE,
-
-  /// Animation will reset to the beginning and start playing forward.
-  START_OVER_FORWARD,
-
-  /// Animation will reset to the end and start play backward.
-  START_OVER_REVERSE,
-
-  /// Animation will play forwards and start over at the beginning when it
-  /// reaches the end.
-  LOOP,
-
-  /// Animation will play forward until the end and will reverse playing until
-  /// it reaches the beginning. Then it starts over playing forward. And so on.
-  MIRROR
-}
-
 /// Widget to create custom, managed, tween-based animations in a very simple way.
 ///
 /// ---
@@ -71,40 +45,66 @@ class ControlledAnimation<T> extends StatefulWidget {
   final Duration delay;
   final Widget Function(BuildContext buildContext, T animatedValue) builder;
   final Widget Function(BuildContext, Widget child, T animatedValue)
-  builderWithChild;
+      builderWithChild;
   final Widget child;
   final AnimationStatusListener animationControllerStatusListener;
   final double startPosition;
 
   ControlledAnimation(
       {this.playback = Playback.PLAY_FORWARD,
-        this.tween,
-        this.curve = Curves.linear,
-        this.duration,
-        this.delay,
-        this.builder,
-        this.builderWithChild,
-        this.child,
-        this.animationControllerStatusListener,
-        this.startPosition = 0.0,
-        Key key})
+      this.tween,
+      this.curve = Curves.linear,
+      this.duration,
+      this.delay,
+      this.builder,
+      this.builderWithChild,
+      this.child,
+      this.animationControllerStatusListener,
+      this.startPosition = 0.0,
+      Key key})
       : assert(duration != null,
-  "Please set property duration. Example: Duration(milliseconds: 500)"),
+            "Please set property duration. Example: Duration(milliseconds: 500)"),
         assert(tween != null,
-        "Please set property tween. Example: Tween(from: 0.0, to: 100.0)"),
+            "Please set property tween. Example: Tween(from: 0.0, to: 100.0)"),
         assert(
-        (builderWithChild != null && child != null && builder == null) ||
-            (builder != null && builderWithChild == null && child == null),
-        "Either use just builder and keep buildWithChild and child null. "
+            (builderWithChild != null && child != null && builder == null) ||
+                (builder != null && builderWithChild == null && child == null),
+            "Either use just builder and keep buildWithChild and child null. "
             "Or keep builder null and set a builderWithChild and a child."),
         assert(
-        startPosition >= 0 && startPosition <= 1,
-        "The property startPosition "
+            startPosition >= 0 && startPosition <= 1,
+            "The property startPosition "
             "must have a value between 0.0 and 1.0."),
         super(key: key);
 
   @override
   _ControlledAnimationState<T> createState() => _ControlledAnimationState<T>();
+}
+
+/// Playback tell the controller of the animation what to do.
+enum Playback {
+  /// Animation stands still.
+  PAUSE,
+
+  /// Animation plays forwards and stops at the end.
+  PLAY_FORWARD,
+
+  /// Animation plays backwards and stops at the beginning.
+  PLAY_REVERSE,
+
+  /// Animation will reset to the beginning and start playing forward.
+  START_OVER_FORWARD,
+
+  /// Animation will reset to the end and start play backward.
+  START_OVER_REVERSE,
+
+  /// Animation will play forwards and start over at the beginning when it
+  /// reaches the end.
+  LOOP,
+
+  /// Animation will play forward until the end and will reverse playing until
+  /// it reaches the beginning. Then it starts over playing forward. And so on.
+  MIRROR
 }
 
 class _ControlledAnimationState<T> extends State<ControlledAnimation>
@@ -116,41 +116,33 @@ class _ControlledAnimationState<T> extends State<ControlledAnimation>
   bool _isCurrentlyMirroring = false;
 
   @override
-  void initState() {
-    _controller = AnimationController(vsync: this, duration: widget.duration)
-      ..addListener(() {
-        setState(() {});
-      })
-      ..value = widget.startPosition;
-
-    _animation = widget.tween
-        .chain(CurveTween(curve: widget.curve))
-        .animate(_controller);
-
-    if (widget.animationControllerStatusListener != null) {
-      _controller.addStatusListener(widget.animationControllerStatusListener);
+  Widget build(BuildContext context) {
+    if (widget.builder != null) {
+      return widget.builder(context, _animation.value);
+    } else if (widget.builderWithChild != null && widget.child != null) {
+      return widget.builderWithChild(context, widget.child, _animation.value);
     }
-
-    initialize();
-    super.initState();
-  }
-
-  void initialize() async {
-    if (widget.delay != null) {
-      await Future.delayed(widget.delay);
-    }
-    _waitForDelay = false;
-    executeInstruction();
+    _controller.stop(canceled: true);
+    throw FlutterError(
+        "I don't know how to build the animation. Make sure to either specify "
+        "a builder or a builderWithChild (along with a child).");
   }
 
   @override
   void didUpdateWidget(ControlledAnimation oldWidget) {
     _controller.duration = widget.duration;
-    executeInstruction();
+    _executeInstruction();
     super.didUpdateWidget(oldWidget);
   }
 
-  void executeInstruction() async {
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _executeInstruction() async {
     if (_isDisposed || _waitForDelay) {
       return;
     }
@@ -183,23 +175,31 @@ class _ControlledAnimationState<T> extends State<ControlledAnimation>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (widget.builder != null) {
-      return widget.builder(context, _animation.value);
-    } else if (widget.builderWithChild != null && widget.child != null) {
-      return widget.builderWithChild(context, widget.child, _animation.value);
+  void _initialize() async {
+    if (widget.delay != null) {
+      await Future.delayed(widget.delay);
     }
-    _controller.stop(canceled: true);
-    throw FlutterError(
-        "I don't know how to build the animation. Make sure to either specify "
-            "a builder or a builderWithChild (along with a child).");
+    _waitForDelay = false;
+    _executeInstruction();
   }
 
   @override
-  void dispose() {
-    _isDisposed = true;
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..addListener(() {
+        setState(() {});
+      })
+      ..value = widget.startPosition;
+
+    _animation = widget.tween
+        .chain(CurveTween(curve: widget.curve))
+        .animate(_controller);
+
+    if (widget.animationControllerStatusListener != null) {
+      _controller.addStatusListener(widget.animationControllerStatusListener);
+    }
+
+    _initialize();
+    super.initState();
   }
 }

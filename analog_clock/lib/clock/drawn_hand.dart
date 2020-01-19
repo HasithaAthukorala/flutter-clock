@@ -14,6 +14,9 @@ import 'hand.dart';
 /// This hand is used to build the second and minute hands, and demonstrates
 /// building a custom hand.
 class DrawnHand extends Hand {
+  /// How thick the hand should be drawn, in logical pixels.
+  final double thickness;
+
   /// Create a const clock [Hand].
   ///
   /// All of the parameters are required and must not be null.
@@ -31,9 +34,6 @@ class DrawnHand extends Hand {
           size: size,
           angleRadians: angleRadians,
         );
-
-  /// How thick the hand should be drawn, in logical pixels.
-  final double thickness;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +54,11 @@ class DrawnHand extends Hand {
 
 /// [CustomPainter] that draws a clock hand.
 class _HandPainter extends CustomPainter {
+  double handSize;
+
+  double lineWidth;
+  double angleRadians;
+  Color color;
   _HandPainter({
     @required this.handSize,
     @required this.lineWidth,
@@ -65,11 +70,6 @@ class _HandPainter extends CustomPainter {
         assert(color != null),
         assert(handSize >= 0.0),
         assert(handSize <= 1.0);
-
-  double handSize;
-  double lineWidth;
-  double angleRadians;
-  Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -85,7 +85,6 @@ class _HandPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(center, position, linePaint);
-//    canvas.drawRRect(new RRect.fromRectAndCorners(new Rect.fromCenter(center: center, width: position, height: position)), linePaint);
   }
 
   @override

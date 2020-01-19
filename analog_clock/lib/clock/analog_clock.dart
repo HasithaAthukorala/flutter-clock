@@ -5,34 +5,35 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:analog_clock/background/tween.dart';
 import 'package:analog_clock/clock/clock_dial_painter.dart';
 import 'package:analog_clock/clock/weather_widget.dart';
 import 'package:analog_clock/utils/slider_painter.dart';
-import 'package:analog_clock/background/tween.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_clock_helper/model.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
-import 'drawn_hand.dart';
+
 import '../background/fancy_background.dart';
 import '../background/wave.dart';
+import 'drawn_hand.dart';
+
+/// Total distance traveled by an hour hand, each hour, in radians.
+final radiansPerHour = radians(360 / 12);
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
 final radiansPerTick = radians(360 / 60);
 
-/// Total distance traveled by an hour hand, each hour, in radians.
-final radiansPerHour = radians(360 / 12);
-
 /// A basic analog clock.
 ///
 /// You can do better than this!
 class AnalogClock extends StatefulWidget {
-  const AnalogClock(this.model);
-
   final ClockModel model;
+
+  const AnalogClock(this.model);
 
   @override
   _AnalogClockState createState() => _AnalogClockState();
@@ -41,60 +42,15 @@ class AnalogClock extends StatefulWidget {
 class _AnalogClockState extends State<AnalogClock> {
   var _now = DateTime.now();
   var _temperature = '';
-  var _temperatureRange = '';
   var _condition = '';
-  var _location = '';
   Timer _timer;
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-    widget.model.addListener(_updateModel);
-    // Set the initial values.
-    _updateTime();
-    _updateModel();
-  }
-
-  @override
-  void didUpdateWidget(AnalogClock oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.model != oldWidget.model) {
-      oldWidget.model.removeListener(_updateModel);
-      widget.model.addListener(_updateModel);
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    widget.model.removeListener(_updateModel);
-    super.dispose();
-  }
-
-  void _updateModel() {
-    setState(() {
-      _temperature = widget.model.temperatureString;
-      _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
-      _condition = widget.model.weatherString;
-      _location = widget.model.location;
-    });
-  }
-
-  void _updateTime() {
-    setState(() {
-      _now = DateTime.now();
-      // Update once per second. Make sure to do it at the beginning of each
-      // new second, so that the clock is accurate.
-      _timer = Timer(
-        Duration(microseconds: 100) - Duration(milliseconds: _now.millisecond),
-        _updateTime,
-      );
-    });
-  }
+  final tween = MultiTrackTween([
+    Track("color1").add(Duration(seconds: 3),
+        ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
+    Track("color2").add(Duration(seconds: 3),
+        ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
+  ]);
 
   @override
   Widget build(BuildContext context) {
@@ -108,23 +64,6 @@ class _AnalogClockState extends State<AnalogClock> {
 
     Size size = MediaQuery.of(context).size;
 
-    final customTheme = Theme.of(context).brightness == Brightness.light
-        ? Theme.of(context).copyWith(
-            // Hour hand.
-            primaryColor: Color(0xFF4285F4),
-            // Minute hand.
-            highlightColor: Color(0xFF8AB4F8),
-            // Second hand.
-            accentColor: Color(0xFF669DF6),
-            backgroundColor: Color(0xFFD2E3FC),
-          )
-        : Theme.of(context).copyWith(
-            primaryColor: Color(0xFFD2E3FC),
-            highlightColor: Color(0xFF4285F4),
-            accentColor: Color(0xFF8AB4F8),
-            backgroundColor: Color(0xFF3C4043),
-          );
-
     final time = DateFormat.Hms().format(DateTime.now());
     return Semantics.fromProperties(
       properties: SemanticsProperties(
@@ -135,8 +74,6 @@ class _AnalogClockState extends State<AnalogClock> {
         color: Color(0xFF0F3F63),
         child: Stack(
           children: [
-//            Positioned.fill(child: Image.asset("assets/iphone_background.jpg", fit: BoxFit.cover,)),
-//            Positioned.fill(child: Container(color: Colors.black38,)),
             onBottom(AnimatedWave(
               height: 30,
               speed: 1.0,
@@ -161,7 +98,8 @@ class _AnalogClockState extends State<AnalogClock> {
                 ),
                 Expanded(
                   flex: 8,
-                  child: WeatherWidget(temperature: _temperature, condition: _condition),
+                  child: WeatherWidget(
+                      temperature: _temperature, condition: _condition),
                 ),
                 Expanded(
                   flex: 2,
@@ -185,17 +123,33 @@ class _AnalogClockState extends State<AnalogClock> {
                       new Center(
                         child: Container(
                           child: CustomPaint(
-                            painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Color(0xa11C9CF6), radius: 105, strokeWidth: 2),
+                            painter: SliderPainter(
+                                startAngle: 0,
+                                endAngle:
+                                    ((_now.millisecond * 0.001) + _now.second) *
+                                        radiansPerTick,
+                                sweepAngle: 300,
+                                selectionColor: Color(0xa11C9CF6),
+                                radius: 105,
+                                strokeWidth: 2),
                           ),
                         ),
                       ),
-
                       new Center(
                         child: Container(
-                          child: CustomPaint(painter: SliderPainter(startAngle: 0, endAngle: ((_now.millisecond * 0.001) + _now.second) * radiansPerTick, sweepAngle: 300, selectionColor: Color(0xa11C9CF6), radius: 120, strokeWidth: 12),),
+                          child: CustomPaint(
+                            painter: SliderPainter(
+                                startAngle: 0,
+                                endAngle:
+                                    ((_now.millisecond * 0.001) + _now.second) *
+                                        radiansPerTick,
+                                sweepAngle: 300,
+                                selectionColor: Color(0xa11C9CF6),
+                                radius: 120,
+                                strokeWidth: 12),
+                          ),
                         ),
                       ),
-
                       DrawnHand(
                         color: Color(0xc1ff6781),
                         thickness: 8,
@@ -214,10 +168,11 @@ class _AnalogClockState extends State<AnalogClock> {
                         size: 0.7,
                         angleRadians: _now.second * radiansPerTick,
                       ),
-
                       new Center(
                         child: Container(
-                          child: CustomPaint(painter: ClockDialPainter(size,_now.second),),
+                          child: CustomPaint(
+                            painter: ClockDialPainter(size, _now.second),
+                          ),
                         ),
                       ),
                     ],
@@ -235,23 +190,7 @@ class _AnalogClockState extends State<AnalogClock> {
     );
   }
 
-  onBottom(Widget child) => Positioned.fill(
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: child,
-      )
-  );
-
-
-  final tween = MultiTrackTween([
-    Track("color1").add(Duration(seconds: 3),
-        ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
-    Track("color2").add(Duration(seconds: 3),
-        ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
-  ]);
-
-
-  Widget buildAnimation() {
+  Widget _buildAnimation() {
     return ControlledAnimation(
       playback: Playback.MIRROR,
       tween: tween,
@@ -268,5 +207,57 @@ class _AnalogClockState extends State<AnalogClock> {
     );
   }
 
+  @override
+  void didUpdateWidget(AnalogClock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.model != oldWidget.model) {
+      oldWidget.model.removeListener(_updateModel);
+      widget.model.addListener(_updateModel);
+    }
+  }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    widget.model.removeListener(_updateModel);
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    widget.model.addListener(_updateModel);
+    // Set the initial values.
+    _updateTime();
+    _updateModel();
+  }
+
+  onBottom(Widget child) => Positioned.fill(
+          child: Align(
+        alignment: Alignment.bottomCenter,
+        child: child,
+      ));
+
+  void _updateModel() {
+    setState(() {
+      _temperature = widget.model.temperatureString;
+      _condition = widget.model.weatherString;
+    });
+  }
+
+  void _updateTime() {
+    setState(() {
+      _now = DateTime.now();
+      // Update once per second. Make sure to do it at the beginning of each
+      // new second, so that the clock is accurate.
+      _timer = Timer(
+        Duration(microseconds: 100) - Duration(milliseconds: _now.millisecond),
+        _updateTime,
+      );
+    });
+  }
 }

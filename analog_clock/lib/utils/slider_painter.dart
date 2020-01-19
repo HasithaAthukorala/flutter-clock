@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:analog_clock/utils/utils.dart';
 
 class SliderPainter extends CustomPainter {
   double startAngle;
@@ -17,12 +16,11 @@ class SliderPainter extends CustomPainter {
 
   SliderPainter(
       {@required this.startAngle,
-        @required this.endAngle,
-        @required this.sweepAngle,
-        @required this.selectionColor,
-        @required this.radius,
-        @required this.strokeWidth
-      });
+      @required this.endAngle,
+      @required this.sweepAngle,
+      @required this.selectionColor,
+      @required this.radius,
+      @required this.strokeWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -31,26 +29,18 @@ class SliderPainter extends CustomPainter {
     Paint progress = _getPaint(color: selectionColor, width: strokeWidth);
 
     center = Offset(size.width / 2, size.height / 2);
-//    radius = 100; //ToDo: Configure
-
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         -pi / 2 + startAngle, sweepAngle, false, progress);
 
-    Paint handler = _getPaint(color: selectionColor, style: PaintingStyle.fill);
-    Paint handlerOutter = _getPaint(color: selectionColor, width: 2.0);
-
-    // draw handlers
-//    initHandler = radiansToCoordinates(center, -pi / 2 + startAngle, radius);
-//    canvas.drawCircle(initHandler, 8.0, handler);
-//    canvas.drawCircle(initHandler, 12.0, handlerOutter);
-//
-//    endHandler = radiansToCoordinates(center, -pi / 2 + endAngle, radius);
-//    canvas.drawCircle(endHandler, 8.0, handler);
-//    canvas.drawCircle(endHandler, 12.0, handlerOutter);
-
-    Paint split = _getPaint(color: Colors.white.withOpacity(0.4), width: strokeWidth);
+    Paint split =
+        _getPaint(color: Colors.white.withOpacity(0.4), width: strokeWidth);
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         startAngle - pi / 2, endAngle, false, split);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 
   Paint _getPaint({@required Color color, double width, PaintingStyle style}) =>
@@ -59,9 +49,4 @@ class SliderPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..style = style ?? PaintingStyle.stroke
         ..strokeWidth = width ?? 12.0;
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
 }

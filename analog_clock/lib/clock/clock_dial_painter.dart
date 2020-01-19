@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class ClockDialPainter extends CustomPainter {
-
-
   final hourTickMarkLength = 10.0;
   final minuteTickMarkLength = 5.0;
 
@@ -59,7 +57,6 @@ class ClockDialPainter extends CustomPainter {
     canvas.save();
 
     // drawing
-//    canvas.translate(dx, dy);
     for (var i = 0; i < tickCount; i++) {
       //make the length and stroke of the tick marker longer and thicker depending
       if (i <= currentSecond) {
@@ -70,12 +67,18 @@ class ClockDialPainter extends CustomPainter {
       if (i == 0 || i == 15 || i == 30 || i == 45) {
         tickPaint.color = Color(0x81ff6781);
       }
-      if (i == 5 || i == 10 || i == 20 || i == 25 || i == 35 || i == 40 || i == 50 || i == 55) {
+      if (i == 5 ||
+          i == 10 ||
+          i == 20 ||
+          i == 25 ||
+          i == 35 ||
+          i == 40 ||
+          i == 50 ||
+          i == 55) {
         tickPaint.color = Color(0x51ff6781);
       }
       tickMarkLength = tickLength;
-      tickPaint.strokeWidth =
-          tickWidth;
+      tickPaint.strokeWidth = tickWidth;
       canvas.drawLine(new Offset(0.0, -radius),
           new Offset(0.0, -radius + tickMarkLength), tickPaint);
 

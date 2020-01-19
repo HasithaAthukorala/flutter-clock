@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'dart:ui';
 
@@ -42,7 +41,6 @@ class CurvePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final white = Paint()..color = Colors.white.withAlpha(60);
     final path = Path();
-
 
     final y1 = sin(value);
     final y2 = sin(value + pi / 2);
